@@ -2,42 +2,58 @@
 
 MetaFlow AI Inbox is a unified AI-powered inbox system for businesses that receive leads from WhatsApp, Facebook Messenger, Instagram DM, Email, and manual sources.
 
-The system receives inbound messages, saves conversations in Supabase, detects customer intent, scores each lead, generates AI replies, and highlights conversations that need human review.
+The system receives inbound messages, saves conversations in Supabase, detects customer intent, scores each lead, generates replies, and highlights conversations that need human review.
+
+## Business Value
+
+MetaFlow helps businesses stop losing leads from scattered inboxes.
+
+It helps teams:
+
+- Reply faster to inbound leads
+- Centralize WhatsApp, Instagram, Facebook, Messenger, and Email conversations
+- Identify high-intent leads
+- Detect customer intent automatically
+- Flag urgent conversations for human review
+- Export leads for sales follow-up
+- Reduce manual inbox work
 
 ## Features
 
-* WhatsApp inbound webhook support
-* Facebook Messenger inbound webhook support
-* Instagram DM inbound webhook support
-* Email webhook support
-* Manual dashboard simulation
-* AI auto-reply using OpenAI API
-* Professional fallback replies when OpenAI quota is unavailable
-* Lead scoring
-* Intent detection
-* Needs human review detection
-* Conversation dashboard
-* Conversation message history
-* Human reply workflow
-* Activity logs
-* CSV export
-* Supabase database
-* Vercel-ready deployment
-* Mobile-first SaaS-style UI
+- WhatsApp inbound webhook support
+- Facebook Messenger inbound webhook support
+- Instagram DM inbound webhook support
+- Email webhook support
+- Manual dashboard simulation
+- OpenAI AI replies
+- Professional fallback demo replies when OpenAI quota is unavailable
+- Lead scoring
+- Intent detection
+- Needs human review detection
+- Protected admin dashboard
+- Conversation dashboard
+- Conversation message history
+- Human reply workflow
+- Clear demo data button
+- Activity logs
+- CSV export
+- Supabase database
+- Vercel-ready deployment
+- Mobile-first SaaS-style UI
 
 ## Tech Stack
 
-* Node.js
-* Express.js
-* Supabase
-* OpenAI API
-* Meta Webhooks
-* WhatsApp Cloud API
-* Facebook Messenger API
-* Instagram Messaging API
-* Nodemailer
-* Vercel
-* HTML, CSS, JavaScript
+- Node.js
+- Express.js
+- Supabase
+- OpenAI API
+- Meta Webhooks
+- WhatsApp Cloud API
+- Facebook Messenger API
+- Instagram Messaging API
+- Nodemailer
+- Vercel
+- HTML, CSS, JavaScript
 
 ## Project Structure
 
@@ -49,6 +65,7 @@ metaflow-ai-inbox/
 ├── package-lock.json
 ├── vercel.json
 ├── README.md
+├── CLIENT_ONBOARDING.md
 ├── .env.example
 ├── .gitignore
 │
@@ -70,6 +87,8 @@ SUPABASE_SERVICE_ROLE_KEY=PUT_SUPABASE_SECRET_SERVICE_ROLE_KEY_HERE
 
 OPENAI_API_KEY=PUT_OPENAI_API_KEY_HERE
 OPENAI_MODEL=gpt-4.1-mini
+
+ADMIN_TOKEN=PUT_ADMIN_TOKEN_HERE
 
 META_VERIFY_TOKEN=metaflow_verify_123
 META_GRAPH_VERSION=v23.0
@@ -96,18 +115,45 @@ SMTP_PASS=
 
 Important:
 
-* Do not commit `.env` to GitHub.
-* Use the Supabase `service_role` secret key, not the anon public key.
-* Keep `AUTO_SEND=false` during testing.
-* Set `AUTO_SEND=true` only after live credentials are fully tested.
+- Do not commit `.env` to GitHub.
+- Use the Supabase `service_role` secret key, not the anon public key.
+- Keep `AUTO_SEND=false` during testing.
+- Set `AUTO_SEND=true` only after live credentials are fully tested.
+- Use `ADMIN_TOKEN` to protect the live dashboard.
+
+## Admin Protection
+
+Protected dashboard routes require an admin token.
+
+Set this in `.env`:
+
+```env
+ADMIN_TOKEN=your_secure_admin_token
+```
+
+When the dashboard opens, it asks for the admin token.  
+The token is stored locally in the browser and sent with protected requests.
+
+Protected actions include:
+
+- Viewing conversations
+- Simulating messages
+- Viewing messages
+- Sending human replies
+- Changing statuses
+- Exporting CSV
+- Clearing demo data
+- Viewing logs
+
+Meta webhooks stay public because Meta needs to call them directly.
 
 ## Supabase Tables
 
 The system uses three main tables:
 
-* `inbox_conversations`
-* `inbox_messages`
-* `inbox_logs`
+- `inbox_conversations`
+- `inbox_messages`
+- `inbox_logs`
 
 These tables store customer conversations, message history, and system activity logs.
 
@@ -205,6 +251,12 @@ POST /conversations/:id/human-reply
 POST /demo/seed
 ```
 
+### Clear Demo Data
+
+```txt
+DELETE /demo/clear
+```
+
 ### Activity Logs
 
 ```txt
@@ -220,20 +272,20 @@ GET /export/csv
 ## Demo Workflow
 
 1. Open the dashboard.
-2. Choose a channel: WhatsApp, Facebook, Instagram, Email, or Manual.
-3. Enter customer details.
-4. Write an inbound message.
-5. Click "Generate AI Reply".
-6. The system will:
-
-   * Save the conversation
-   * Save the inbound message
-   * Detect intent
-   * Calculate lead score
-   * Decide if human review is needed
-   * Generate an AI or fallback reply
-   * Save the outbound reply
-   * Add an activity log
+2. Enter the admin token.
+3. Choose a channel: WhatsApp, Facebook, Instagram, Email, or Manual.
+4. Enter customer details.
+5. Write an inbound message.
+6. Click "Generate Reply".
+7. The system will:
+   - Save the conversation
+   - Save the inbound message
+   - Detect intent
+   - Calculate lead score
+   - Decide if human review is needed
+   - Generate an OpenAI or fallback demo reply
+   - Save the outbound reply
+   - Add an activity log
 
 ## Safe Demo Mode
 
@@ -245,7 +297,19 @@ AUTO_SEND=false
 
 This means the system generates and saves replies, but it does not send real messages to WhatsApp, Facebook, Instagram, or Email.
 
-This is recommended for testing and demos.
+This is recommended for demos, testing, and client walkthroughs.
+
+## OpenAI Fallback Mode
+
+If OpenAI is unavailable, quota is exceeded, or the API key is missing, MetaFlow uses a professional fallback demo reply.
+
+The message is labeled as:
+
+```txt
+fallback-demo
+```
+
+This keeps the demo working even before OpenAI billing is active.
 
 ## Live Sending
 
@@ -271,31 +335,90 @@ https://your-project-name.vercel.app/webhooks/meta
 
 Use this URL as the Meta Webhook Callback URL.
 
-## Business Use Case
+## Required Vercel Environment Variables
 
-MetaFlow AI Inbox helps businesses stop losing leads from scattered inboxes.
+Add these in Vercel Project Settings:
 
-It is useful for:
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+ADMIN_TOKEN=
+META_VERIFY_TOKEN=metaflow_verify_123
+META_GRAPH_VERSION=v23.0
+AUTO_SEND=false
+```
 
-* Clinics
-* Medspas
-* Real estate agencies
-* Home service companies
-* Gyms and fitness coaches
-* Local service businesses
-* Agencies
-* E-commerce brands
+For live WhatsApp sending:
 
-## Value Proposition
+```env
+META_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+```
 
-MetaFlow helps businesses:
+For live Facebook Messenger sending:
 
-* Reply faster to inbound leads
-* Centralize WhatsApp, Instagram, Facebook, and Email messages
-* Identify high-intent leads
-* Reduce manual inbox work
-* Prioritize conversations that need human follow-up
-* Export leads for sales follow-up
+```env
+FACEBOOK_PAGE_ACCESS_TOKEN=
+FACEBOOK_PAGE_ID=
+```
+
+For live Instagram sending:
+
+```env
+INSTAGRAM_ACCESS_TOKEN=
+INSTAGRAM_BUSINESS_ID=
+```
+
+For live email sending:
+
+```env
+EMAIL_FROM_NAME=
+EMAIL_FROM_ADDRESS=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_SECURE=
+SMTP_USER=
+SMTP_PASS=
+```
+
+## Client Use Cases
+
+MetaFlow is useful for:
+
+- Clinics
+- Medspas
+- Real estate agencies
+- Home service companies
+- Gyms and fitness coaches
+- Local service businesses
+- Agencies
+- E-commerce brands
+- Training centers
+
+## Monetization Model
+
+MetaFlow can be sold as a done-for-you AI automation service.
+
+Example pricing:
+
+```txt
+Starter:
+$300 setup + $99/month
+
+Growth:
+$700 setup + $199/month
+
+High Volume:
+$1500 setup + $399/month
+```
+
+Early case study pricing:
+
+```txt
+$150-$300 setup + $50-$100/month
+```
 
 ## Author
 

@@ -8,20 +8,17 @@
   <style>
     :root {
       --bg: #07111f;
-      --bg2: #0b172a;
       --card: rgba(15, 23, 42, 0.82);
-      --card2: rgba(17, 24, 39, 0.92);
       --text: #f8fafc;
       --muted: #94a3b8;
       --soft: #cbd5e1;
       --line: rgba(148, 163, 184, 0.18);
       --blue: #38bdf8;
-      --blue2: #2563eb;
       --purple: #8b5cf6;
       --green: #22c55e;
       --yellow: #f59e0b;
       --red: #ef4444;
-      --input: rgba(2, 6, 23, 0.7);
+      --input: rgba(2, 6, 23, 0.75);
       --radius: 22px;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
     }
@@ -39,6 +36,17 @@
         radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.22), transparent 28%),
         radial-gradient(circle at 86% 10%, rgba(139, 92, 246, 0.20), transparent 30%),
         linear-gradient(135deg, #030712 0%, #07111f 45%, #0b1120 100%);
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      -webkit-text-fill-color: #f8fafc;
+      -webkit-box-shadow: 0 0 0px 1000px #020617 inset;
+      transition: background-color 9999s ease-in-out 0s;
+      border: 1px solid var(--line);
     }
 
     .app {
@@ -111,6 +119,12 @@
       color: #bbf7d0;
       border-color: rgba(34, 197, 94, 0.35);
       background: rgba(34, 197, 94, 0.10);
+    }
+
+    .pill.warn {
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.10);
     }
 
     .hero {
@@ -190,8 +204,9 @@
       font-weight: 700;
     }
 
-    .status-card {
-      padding: 22px;
+    .status-card,
+    .panel {
+      padding: 20px;
     }
 
     .section-head {
@@ -246,6 +261,31 @@
       font-weight: 700;
     }
 
+    .business-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .business-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.32);
+      border-radius: 18px;
+    }
+
+    .business-card strong {
+      display: block;
+      margin-bottom: 7px;
+    }
+
+    .business-card span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -279,10 +319,6 @@
       grid-template-columns: 0.92fr 1.2fr;
       gap: 18px;
       align-items: start;
-    }
-
-    .panel {
-      padding: 20px;
     }
 
     .small {
@@ -361,6 +397,13 @@
       color: var(--text);
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    button.danger {
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.10);
+      border: 1px solid rgba(239, 68, 68, 0.35);
       box-shadow: none;
     }
 
@@ -579,7 +622,7 @@
       left: 50%;
       bottom: 22px;
       transform: translateX(-50%);
-      z-index: 50;
+      z-index: 80;
       display: none;
       max-width: min(560px, calc(100% - 24px));
       border: 1px solid var(--line);
@@ -591,13 +634,47 @@
       font-weight: 800;
     }
 
+    .auth-screen {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 30%),
+        rgba(2, 6, 23, 0.92);
+      z-index: 70;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .auth-card {
+      width: min(440px, 100%);
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.94);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .auth-card h2 {
+      margin: 0 0 8px;
+    }
+
+    .auth-card p {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0 0 16px;
+    }
+
     @media (max-width: 940px) {
       .hero,
       .main-grid {
         grid-template-columns: 1fr;
       }
 
-      .stats {
+      .stats,
+      .business-strip {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -624,6 +701,7 @@
       }
 
       .stats,
+      .business-strip,
       .form-row,
       .filters,
       .customer-grid {
@@ -651,6 +729,25 @@
 </head>
 
 <body>
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+      <div class="logo" style="margin-bottom:14px;">MF</div>
+      <h2>Admin Access Required</h2>
+      <p>This live demo is protected. Enter the admin token to access the inbox dashboard.</p>
+
+      <label>Admin Token</label>
+      <input id="adminTokenInput" type="password" placeholder="Enter admin token" />
+
+      <div class="btns">
+        <button id="saveAdminTokenBtn">Unlock Dashboard</button>
+      </div>
+
+      <p class="small" style="margin-top:14px;">
+        The token is stored locally in your browser and sent as an admin header for protected dashboard actions.
+      </p>
+    </div>
+  </div>
+
   <main class="app">
     <header class="topbar">
       <div class="brand">
@@ -663,6 +760,7 @@
 
       <div class="top-actions">
         <span class="pill safe">Demo Safe Mode</span>
+        <span class="pill" id="adminStatusPill">Admin: Checking</span>
         <span class="pill">Supabase</span>
         <span class="pill">OpenAI</span>
       </div>
@@ -674,7 +772,7 @@
         <h1>Turn every inbound message into a scored sales conversation.</h1>
         <p class="subtitle">
           MetaFlow centralizes WhatsApp, Facebook Messenger, Instagram DM, Email, and manual demo messages.
-          It detects intent, scores lead quality, generates AI replies, and highlights conversations that need human review.
+          It detects intent, scores lead quality, generates replies, and highlights conversations that need human review.
         </p>
 
         <div class="chips">
@@ -708,6 +806,10 @@
             <strong id="supabaseStatus">Checking...</strong>
           </div>
           <div class="status-item">
+            <span>Admin Protection</span>
+            <strong id="adminProtectionStatus">Checking...</strong>
+          </div>
+          <div class="status-item">
             <span>Auto Send</span>
             <strong id="autoSendStatus">Checking...</strong>
           </div>
@@ -724,8 +826,27 @@
     </section>
 
     <div class="notice">
-      AUTO_SEND is currently OFF. MetaFlow will generate and store replies, but it will not send real messages until you enable live sending.
+      AUTO_SEND is currently OFF. MetaFlow will generate and store replies, but it will not send real messages until live sending is enabled.
     </div>
+
+    <section class="business-strip">
+      <div class="business-card">
+        <strong>Never miss leads</strong>
+        <span>Centralize WhatsApp, Instagram, Facebook, and Email messages in one dashboard.</span>
+      </div>
+      <div class="business-card">
+        <strong>Reply faster</strong>
+        <span>Generate fast professional replies for new inbound conversations.</span>
+      </div>
+      <div class="business-card">
+        <strong>Prioritize buyers</strong>
+        <span>Detect pricing, booking, support, and buying intent automatically.</span>
+      </div>
+      <div class="business-card">
+        <strong>Human review</strong>
+        <span>Flag urgent or high-intent conversations for manual follow-up.</span>
+      </div>
+    </section>
 
     <section class="stats">
       <div class="stat">
@@ -757,7 +878,7 @@
           </div>
 
           <p class="small">
-            Test the full AI workflow locally before connecting live Meta or email webhooks.
+            Test the full AI workflow locally or live before connecting real Meta and email accounts.
           </p>
 
           <form id="simulateForm">
@@ -798,9 +919,10 @@
             <textarea id="messageText" placeholder="Example: Hello, I want to know the price and book a call today."></textarea>
 
             <div class="btns">
-              <button type="submit" id="simulateBtn">Generate AI Reply</button>
+              <button type="submit" id="simulateBtn">Generate Reply</button>
               <button type="button" class="secondary" id="seedBtn">Add Demo Data</button>
-              <a class="btn-link secondary" href="/export/csv">Export CSV</a>
+              <button type="button" class="secondary" id="exportBtn">Export CSV</button>
+              <button type="button" class="danger" id="clearDemoBtn">Clear Demo Data</button>
             </div>
           </form>
         </div>
@@ -860,7 +982,7 @@
 
           <div id="details">
             <div class="details-empty">
-              Select a conversation to view messages, AI replies, lead score, intent, and human reply actions.
+              Select a conversation to view messages, replies, lead score, intent, and human reply actions.
             </div>
           </div>
         </div>
@@ -874,8 +996,34 @@
     let conversations = [];
     let selectedConversationId = null;
     let searchTimer = null;
+    let adminProtectionEnabled = false;
+
+    const ADMIN_STORAGE_KEY = "metaflow_admin_token";
 
     const $ = (id) => document.getElementById(id);
+
+    function getAdminToken() {
+      return localStorage.getItem(ADMIN_STORAGE_KEY) || "";
+    }
+
+    function setAdminToken(token) {
+      localStorage.setItem(ADMIN_STORAGE_KEY, token);
+      document.cookie = "metaflow_admin_token=" + encodeURIComponent(token) + "; path=/; max-age=2592000; SameSite=Lax";
+    }
+
+    function clearAdminToken() {
+      localStorage.removeItem(ADMIN_STORAGE_KEY);
+      document.cookie = "metaflow_admin_token=; path=/; max-age=0; SameSite=Lax";
+    }
+
+    function showAuthScreen() {
+      $("authScreen").style.display = "flex";
+      $("adminTokenInput").focus();
+    }
+
+    function hideAuthScreen() {
+      $("authScreen").style.display = "none";
+    }
 
     function toast(message) {
       const box = $("toast");
@@ -884,7 +1032,7 @@
 
       setTimeout(() => {
         box.style.display = "none";
-      }, 3300);
+      }, 3400);
     }
 
     function escapeHtml(value) {
@@ -931,15 +1079,31 @@
       return "good";
     }
 
+    function aiSourceLabel(aiModel) {
+      if (!aiModel) return "";
+      if (aiModel === "fallback-demo") return "Fallback Demo";
+      return aiModel;
+    }
+
     async function api(path, options = {}) {
+      const token = getAdminToken();
+
       const response = await fetch(path, {
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+          ...(options.headers || {})
         },
         ...options
       });
 
       const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401) {
+        clearAdminToken();
+        showAuthScreen();
+        throw new Error(data.error || "Admin token required");
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "Request failed");
@@ -952,12 +1116,21 @@
       try {
         const data = await api("/health");
 
+        adminProtectionEnabled = Boolean(data.admin_protection_enabled);
+
         $("backendStatus").textContent = data.ok ? "Online" : "Offline";
-        $("openaiStatus").textContent = data.openai_ready ? "Ready" : "Missing Key";
+        $("openaiStatus").textContent = data.openai_key_found ? "Key Found" : "Missing Key";
         $("supabaseStatus").textContent = data.supabase_ready ? "Ready" : "Missing Config";
+        $("adminProtectionStatus").textContent = adminProtectionEnabled ? "Enabled" : "Disabled";
+        $("adminStatusPill").textContent = adminProtectionEnabled ? "Admin: Protected" : "Admin: Open";
+        $("adminStatusPill").className = adminProtectionEnabled ? "pill warn" : "pill";
         $("autoSendStatus").textContent = data.auto_send ? "ON" : "OFF / Demo Safe";
         $("metaWebhookUrl").textContent = data.webhook_url || (window.location.origin + "/webhooks/meta");
         $("emailWebhookUrl").textContent = data.email_webhook_url || (window.location.origin + "/webhooks/email");
+
+        if (adminProtectionEnabled && !getAdminToken()) {
+          showAuthScreen();
+        }
       } catch (err) {
         $("backendStatus").textContent = "Error";
         $("openaiStatus").textContent = "-";
@@ -1058,7 +1231,7 @@
     function renderEmptyDetails() {
       $("details").innerHTML = `
         <div class="details-empty">
-          Select a conversation to view messages, AI replies, lead score, intent, and human reply actions.
+          Select a conversation to view messages, replies, lead score, intent, and human reply actions.
         </div>
       `;
     }
@@ -1135,6 +1308,7 @@
                 <div class="msg ${m.direction}">
                   <div class="msg-meta">
                     ${escapeHtml(m.sender_type)} · ${escapeHtml(m.direction)} · ${formatDate(m.created_at)}
+                    ${m.ai_model ? ` · ${escapeHtml(aiSourceLabel(m.ai_model))}` : ``}
                   </div>
                   <div class="msg-text">${escapeHtml(m.message_text)}</div>
                 </div>
@@ -1247,14 +1421,14 @@
       if (!payload.message_text) {
         toast("Write a message first");
         btn.disabled = false;
-        btn.textContent = "Generate AI Reply";
+        btn.textContent = "Generate Reply";
         return;
       }
 
       if (channel === "email" && !payload.customer_email) {
         toast("Email channel needs a customer email");
         btn.disabled = false;
-        btn.textContent = "Generate AI Reply";
+        btn.textContent = "Generate Reply";
         return;
       }
 
@@ -1264,7 +1438,7 @@
           body: JSON.stringify(payload)
         });
 
-        toast("AI reply generated and conversation saved");
+        toast("Reply generated and conversation saved");
 
         $("messageText").value = "";
 
@@ -1278,7 +1452,7 @@
         toast("Error: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Generate AI Reply";
+        btn.textContent = "Generate Reply";
       }
     }
 
@@ -1304,8 +1478,99 @@
       }
     }
 
+    async function clearDemoData() {
+      const confirmed = confirm("Clear all MetaFlow inbox demo conversations, messages, and logs?");
+
+      if (!confirmed) return;
+
+      const btn = $("clearDemoBtn");
+      btn.disabled = true;
+      btn.textContent = "Clearing...";
+
+      try {
+        await api("/demo/clear", {
+          method: "DELETE"
+        });
+
+        selectedConversationId = null;
+        renderEmptyDetails();
+
+        toast("Demo data cleared");
+
+        await loadConversations();
+        await loadLogs();
+      } catch (err) {
+        toast("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Clear Demo Data";
+      }
+    }
+
+    async function exportCsv() {
+      try {
+        const token = getAdminToken();
+        const response = await fetch("/export/csv", {
+          headers: {
+            "x-admin-token": token
+          }
+        });
+
+        if (response.status === 401) {
+          clearAdminToken();
+          showAuthScreen();
+          throw new Error("Admin token required");
+        }
+
+        if (!response.ok) {
+          throw new Error("CSV export failed");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "metaflow-ai-inbox.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    $("saveAdminTokenBtn").addEventListener("click", async () => {
+      const token = $("adminTokenInput").value.trim();
+
+      if (!token) {
+        toast("Enter the admin token first");
+        return;
+      }
+
+      setAdminToken(token);
+      hideAuthScreen();
+
+      try {
+        await loadConversations();
+        await loadLogs();
+        toast("Dashboard unlocked");
+      } catch (err) {
+        toast("Invalid admin token");
+      }
+    });
+
+    $("adminTokenInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        $("saveAdminTokenBtn").click();
+      }
+    });
+
     $("simulateForm").addEventListener("submit", submitSimulation);
     $("seedBtn").addEventListener("click", seedDemo);
+    $("clearDemoBtn").addEventListener("click", clearDemoData);
+    $("exportBtn").addEventListener("click", exportCsv);
     $("refreshBtn").addEventListener("click", loadConversations);
     $("refreshLogsBtn").addEventListener("click", loadLogs);
 
@@ -1317,9 +1582,16 @@
       searchTimer = setTimeout(loadConversations, 350);
     });
 
-    loadHealth();
-    loadConversations();
-    loadLogs();
+    async function init() {
+      await loadHealth();
+
+      if (!adminProtectionEnabled || getAdminToken()) {
+        await loadConversations();
+        await loadLogs();
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>

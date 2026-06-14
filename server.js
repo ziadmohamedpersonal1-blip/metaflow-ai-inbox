@@ -28,8 +28,10 @@ const META_GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v23.0";
 
 const AUTO_SEND = String(process.env.AUTO_SEND || "false").toLowerCase() === "true";
 
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
+  console.warn("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment variables");
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -53,6 +55,48 @@ function getBaseUrl(req) {
   const host = req.get("host");
   const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
   return `${protocol}://${host}`;
+}
+
+function getCookieValue(req, name) {
+  const cookieHeader = req.headers.cookie || "";
+  const cookies = cookieHeader.split(";").map((cookie) => cookie.trim());
+
+  for (const cookie of cookies) {
+    const [key, ...valueParts] = cookie.split("=");
+
+    if (key === name) {
+      return decodeURIComponent(valueParts.join("="));
+    }
+  }
+
+  return "";
+}
+
+function getRequestAdminToken(req) {
+  return (
+    req.headers["x-admin-token"] ||
+    req.query.admin_token ||
+    req.body?.admin_token ||
+    getCookieValue(req, "metaflow_admin_token") ||
+    ""
+  );
+}
+
+function requireAdmin(req, res, next) {
+  if (!ADMIN_TOKEN) {
+    return next();
+  }
+
+  const incomingToken = getRequestAdminToken(req);
+
+  if (incomingToken === ADMIN_TOKEN) {
+    return next();
+  }
+
+  return res.status(401).json({
+    success: false,
+    error: "Unauthorized. Admin token is required."
+  });
 }
 
 async function addLog(action, channel = "", conversationId = null, details = "") {
@@ -145,6 +189,7 @@ function calculateLeadScore(messageText = "", customer = {}) {
     "call",
     "appointment",
     "interested",
+    "budget",
     "سعر",
     "عرض سعر",
     "تكلفة",
@@ -204,7 +249,6 @@ async function generateAiReply({ channel, messageText, customerName, intent, lea
     const name = customerName ? customerName.split(" ")[0] : "";
     const greeting = name ? `Hi ${name},` : "Hi there,";
     const text = String(messageText || "").toLowerCase();
-
     const isHighIntent = Number(leadScore || 0) >= 70;
 
     if (intent === "Pricing / Quote") {
@@ -243,7 +287,10 @@ async function generateAiReply({ channel, messageText, customerName, intent, lea
   const fallbackReply = buildProfessionalFallbackReply();
 
   if (!openai) {
-    return fallbackReply;
+    return {
+      reply: fallbackReply,
+      source: "fallback-demo"
+    };
   }
 
   const systemPrompt = `
@@ -280,12 +327,22 @@ ${messageText}
       temperature: 0.5
     });
 
-    return response.choices?.[0]?.message?.content?.trim() || fallbackReply;
+    const generatedText = response.choices?.[0]?.message?.content?.trim();
+
+    return {
+      reply: generatedText || fallbackReply,
+      source: generatedText ? "openai" : "fallback-demo"
+    };
   } catch (err) {
     console.error("OpenAI error:", err.message);
-    return fallbackReply;
+
+    return {
+      reply: fallbackReply,
+      source: "fallback-demo"
+    };
   }
 }
+
 async function findOrCreateConversation(payload) {
   const channel = normalizeChannel(payload.channel);
 
@@ -576,7 +633,7 @@ async function processInboundMessage(payload) {
 
   const humanReview = needsHumanReview(messageText, leadScore);
 
-  const aiReply = await generateAiReply({
+  const aiGeneration = await generateAiReply({
     channel,
     messageText,
     customerName: payload.customer_name || conversation.customer_name,
@@ -584,13 +641,16 @@ async function processInboundMessage(payload) {
     leadScore
   });
 
+  const aiReply = aiGeneration.reply;
+  const aiModelLabel = aiGeneration.source === "openai" ? OPENAI_MODEL : "fallback-demo";
+
   await saveMessage({
     conversationId: conversation.id,
     channel,
     direction: "outbound",
     senderType: "ai",
     messageText: aiReply,
-    aiModel: OPENAI_MODEL
+    aiModel: aiModelLabel
   });
 
   const updatedConversation = await updateConversation(conversation.id, {
@@ -612,12 +672,13 @@ async function processInboundMessage(payload) {
     "Inbound processed",
     channel,
     conversation.id,
-    `Intent: ${intent}, Score: ${leadScore}, Human review: ${humanReview}, Sent: ${sendResult.sent}`
+    `Intent: ${intent}, Score: ${leadScore}, Human review: ${humanReview}, AI source: ${aiModelLabel}, Sent: ${sendResult.sent}`
   );
 
   return {
     conversation: updatedConversation,
     ai_reply: aiReply,
+    ai_source: aiModelLabel,
     send_result: sendResult
   };
 }
@@ -693,8 +754,10 @@ app.get("/health", async (req, res) => {
     ok: true,
     app: "MetaFlow AI Inbox",
     auto_send: AUTO_SEND,
-    openai_ready: Boolean(openai),
+    openai_key_found: Boolean(openai),
+    openai_model: OPENAI_MODEL,
     supabase_ready: Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY),
+    admin_protection_enabled: Boolean(ADMIN_TOKEN),
     webhook_url: `${getBaseUrl(req)}/webhooks/meta`,
     email_webhook_url: `${getBaseUrl(req)}/webhooks/email`,
     time: nowIso()
@@ -798,7 +861,7 @@ app.post("/webhooks/email", async (req, res) => {
   }
 });
 
-app.post("/simulate/inbound", async (req, res) => {
+app.post("/simulate/inbound", requireAdmin, async (req, res) => {
   try {
     const result = await processInboundMessage(req.body);
 
@@ -823,7 +886,7 @@ app.post("/simulate/inbound", async (req, res) => {
   }
 });
 
-app.get("/conversations", async (req, res) => {
+app.get("/conversations", requireAdmin, async (req, res) => {
   try {
     const channel = req.query.channel;
     const status = req.query.status;
@@ -867,7 +930,7 @@ app.get("/conversations", async (req, res) => {
   }
 });
 
-app.get("/conversations/:id/messages", async (req, res) => {
+app.get("/conversations/:id/messages", requireAdmin, async (req, res) => {
   try {
     const conversationId = Number(req.params.id);
 
@@ -902,7 +965,7 @@ app.get("/conversations/:id/messages", async (req, res) => {
   }
 });
 
-app.put("/conversations/:id/status", async (req, res) => {
+app.put("/conversations/:id/status", requireAdmin, async (req, res) => {
   try {
     const conversationId = Number(req.params.id);
     const status = req.body.status || "New";
@@ -933,7 +996,7 @@ app.put("/conversations/:id/status", async (req, res) => {
   }
 });
 
-app.post("/conversations/:id/human-reply", async (req, res) => {
+app.post("/conversations/:id/human-reply", requireAdmin, async (req, res) => {
   try {
     const conversationId = Number(req.params.id);
     const replyText = String(req.body.message_text || "").trim();
@@ -991,7 +1054,7 @@ app.post("/conversations/:id/human-reply", async (req, res) => {
   }
 });
 
-app.post("/demo/seed", async (req, res) => {
+app.post("/demo/seed", requireAdmin, async (req, res) => {
   try {
     const demoMessages = [
       {
@@ -1054,7 +1117,46 @@ app.post("/demo/seed", async (req, res) => {
   }
 });
 
-app.get("/logs", async (req, res) => {
+app.delete("/demo/clear", requireAdmin, async (req, res) => {
+  try {
+    const { error: messagesError } = await supabase
+      .from("inbox_messages")
+      .delete()
+      .neq("id", 0);
+
+    if (messagesError) throw messagesError;
+
+    const { error: conversationsError } = await supabase
+      .from("inbox_conversations")
+      .delete()
+      .neq("id", 0);
+
+    if (conversationsError) throw conversationsError;
+
+    const { error: logsError } = await supabase
+      .from("inbox_logs")
+      .delete()
+      .neq("id", 0);
+
+    if (logsError) throw logsError;
+
+    await addLog("Demo data cleared", "system", null, "All MetaFlow inbox demo data was cleared");
+
+    res.json({
+      success: true,
+      message: "Demo inbox data cleared"
+    });
+  } catch (err) {
+    console.error("Clear demo data error:", err.message);
+
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+app.get("/logs", requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("inbox_logs")
@@ -1078,7 +1180,7 @@ app.get("/logs", async (req, res) => {
   }
 });
 
-app.get("/export/csv", async (req, res) => {
+app.get("/export/csv", requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("inbox_conversations")
@@ -1142,6 +1244,7 @@ if (!process.env.VERCEL) {
     console.log(`MetaFlow AI Inbox running on http://localhost:${PORT}`);
     console.log(`Dashboard: http://localhost:${PORT}/dashboard`);
     console.log(`AUTO_SEND=${AUTO_SEND}`);
+    console.log(`Admin protection enabled: ${Boolean(ADMIN_TOKEN)}`);
   });
 }
 
