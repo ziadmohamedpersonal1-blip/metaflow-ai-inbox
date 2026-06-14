@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetaFlow AI Inbox</title>
+
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #0b172a;
+      --card: rgba(15, 23, 42, 0.82);
+      --card2: rgba(17, 24, 39, 0.92);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --soft: #cbd5e1;
+      --line: rgba(148, 163, 184, 0.18);
+      --blue: #38bdf8;
+      --blue2: #2563eb;
+      --purple: #8b5cf6;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --input: rgba(2, 6, 23, 0.7);
+      --radius: 22px;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.22), transparent 28%),
+        radial-gradient(circle at 86% 10%, rgba(139, 92, 246, 0.20), transparent 30%),
+        linear-gradient(135deg, #030712 0%, #07111f 45%, #0b1120 100%);
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 50px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(15, 23, 42, 0.62);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #020617;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+    }
+
+    .brand-title {
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      font-size: 17px;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--soft);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.safe {
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.35);
+      background: rgba(34, 197, 94, 0.10);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-main {
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -110px;
+      top: -100px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.22), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #7dd3fc;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      max-width: 760px;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 0.94;
+      letter-spacing: -0.065em;
+    }
+
+    .subtitle {
+      max-width: 740px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.055);
+      border-radius: 999px;
+      padding: 8px 11px;
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status-card {
+      padding: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 19px;
+      letter-spacing: -0.03em;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-item:last-child {
+      border-bottom: 0;
+    }
+
+    .status-item strong {
+      color: var(--text);
+      text-align: right;
+      max-width: 65%;
+      overflow-wrap: anywhere;
+    }
+
+    .notice {
+      margin: 0 0 18px;
+      border: 1px solid rgba(34, 197, 94, 0.32);
+      background: rgba(34, 197, 94, 0.09);
+      color: #bbf7d0;
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.55;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.72);
+      border-radius: 20px;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .stat-num {
+      font-size: 34px;
+      font-weight: 950;
+      letter-spacing: -0.05em;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 0.92fr 1.2fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    label {
+      display: block;
+      margin: 13px 0 7px;
+      color: var(--soft);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 13px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 104px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(56, 189, 248, 0.75);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.10);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button,
+    .btn-link {
+      min-height: 43px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 14px;
+      color: #020617;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      font-weight: 950;
+      text-decoration: none;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.16);
+    }
+
+    button.secondary,
+    .btn-link.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .search-row {
+      margin-bottom: 12px;
+    }
+
+    .conversation-list {
+      display: grid;
+      gap: 10px;
+      max-height: 670px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .conversation {
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.34);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .conversation:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(15, 23, 42, 0.78);
+    }
+
+    .conversation.active {
+      border-color: rgba(56, 189, 248, 0.95);
+      background: rgba(56, 189, 248, 0.10);
+    }
+
+    .conv-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .name {
+      font-weight: 950;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .preview {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: 9px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.06);
+      color: #dbeafe;
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.good {
+      color: #bbf7d0;
+      border-color: rgba(34, 197, 94, 0.32);
+      background: rgba(34, 197, 94, 0.10);
+    }
+
+    .badge.warn {
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.10);
+    }
+
+    .badge.bad {
+      color: #fecaca;
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.10);
+    }
+
+    .details-empty {
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.6;
+      background: rgba(2, 6, 23, 0.24);
+    }
+
+    .customer-box {
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.26);
+      border-radius: 18px;
+      padding: 15px;
+      margin-bottom: 14px;
+    }
+
+    .customer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .info-item {
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.46);
+      border-radius: 14px;
+      padding: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .info-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 5px;
+    }
+
+    .messages {
+      display: grid;
+      gap: 10px;
+      max-height: 500px;
+      overflow: auto;
+      margin: 14px 0;
+      padding-right: 4px;
+    }
+
+    .msg {
+      max-width: 92%;
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.36);
+      border-radius: 18px;
+      padding: 12px 13px;
+    }
+
+    .msg.inbound {
+      justify-self: start;
+    }
+
+    .msg.outbound {
+      justify-self: end;
+      background: rgba(56, 189, 248, 0.10);
+      border-color: rgba(56, 189, 248, 0.28);
+    }
+
+    .msg-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      text-transform: capitalize;
+    }
+
+    .msg-text {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .logs {
+      margin-top: 18px;
+    }
+
+    .log-list {
+      display: grid;
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+    }
+
+    .log {
+      border: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.28);
+      border-radius: 14px;
+      padding: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .log strong {
+      color: var(--text);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 50;
+      display: none;
+      max-width: min(560px, calc(100% - 24px));
+      border: 1px solid var(--line);
+      background: #020617;
+      color: var(--text);
+      box-shadow: var(--shadow);
+      border-radius: 16px;
+      padding: 13px 15px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 940px) {
+      .hero,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .status-item strong {
+        max-width: 58%;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .app {
+        width: min(100% - 18px, 1240px);
+        padding-top: 10px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-main,
+      .status-card,
+      .panel {
+        padding: 16px;
+      }
+
+      .stats,
+      .form-row,
+      .filters,
+      .customer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btns {
+        display: grid;
+      }
+
+      button,
+      .btn-link {
+        width: 100%;
+      }
+
+      .msg {
+        max-width: 100%;
+      }
+
+      h1 {
+        font-size: 38px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">MF</div>
+        <div>
+          <div class="brand-title">MetaFlow AI Inbox</div>
+          <div class="brand-sub">Unified AI inbox for Meta, WhatsApp, Instagram, Messenger, and Email</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <span class="pill safe">Demo Safe Mode</span>
+        <span class="pill">Supabase</span>
+        <span class="pill">OpenAI</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow">AI Inbox Automation System</div>
+        <h1>Turn every inbound message into a scored sales conversation.</h1>
+        <p class="subtitle">
+          MetaFlow centralizes WhatsApp, Facebook Messenger, Instagram DM, Email, and manual demo messages.
+          It detects intent, scores lead quality, generates AI replies, and highlights conversations that need human review.
+        </p>
+
+        <div class="chips">
+          <span class="chip">WhatsApp</span>
+          <span class="chip">Facebook Messenger</span>
+          <span class="chip">Instagram DM</span>
+          <span class="chip">Email</span>
+          <span class="chip">AI Auto Reply</span>
+          <span class="chip">Lead Scoring</span>
+          <span class="chip">Intent Detection</span>
+          <span class="chip">Human Review</span>
+        </div>
+      </div>
+
+      <div class="card status-card">
+        <div class="section-head">
+          <h2>System Status</h2>
+        </div>
+
+        <div class="status-list">
+          <div class="status-item">
+            <span>Backend</span>
+            <strong id="backendStatus">Checking...</strong>
+          </div>
+          <div class="status-item">
+            <span>OpenAI</span>
+            <strong id="openaiStatus">Checking...</strong>
+          </div>
+          <div class="status-item">
+            <span>Supabase</span>
+            <strong id="supabaseStatus">Checking...</strong>
+          </div>
+          <div class="status-item">
+            <span>Auto Send</span>
+            <strong id="autoSendStatus">Checking...</strong>
+          </div>
+          <div class="status-item">
+            <span>Meta Webhook</span>
+            <strong id="metaWebhookUrl">/webhooks/meta</strong>
+          </div>
+          <div class="status-item">
+            <span>Email Webhook</span>
+            <strong id="emailWebhookUrl">/webhooks/email</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="notice">
+      AUTO_SEND is currently OFF. MetaFlow will generate and store replies, but it will not send real messages until you enable live sending.
+    </div>
+
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-label">Total Conversations</div>
+        <div class="stat-num" id="statTotal">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Needs Human Review</div>
+        <div class="stat-num" id="statReview">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">High Intent Leads</div>
+        <div class="stat-num" id="statHigh">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">AI Replied</div>
+        <div class="stat-num" id="statAi">0</div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div>
+        <div class="card panel">
+          <div class="section-head">
+            <h2>Simulate Incoming Message</h2>
+          </div>
+
+          <p class="small">
+            Test the full AI workflow locally before connecting live Meta or email webhooks.
+          </p>
+
+          <form id="simulateForm">
+            <div class="form-row">
+              <div>
+                <label>Channel</label>
+                <select id="channel">
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="facebook">Facebook Messenger</option>
+                  <option value="instagram">Instagram DM</option>
+                  <option value="email">Email</option>
+                  <option value="manual">Manual</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Customer Name</label>
+                <input id="customerName" placeholder="Example: Ahmed Hassan" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div>
+                <label>Customer Platform ID</label>
+                <input id="customerPlatformId" placeholder="Phone, Facebook ID, Instagram ID, or email" />
+              </div>
+
+              <div>
+                <label>Phone</label>
+                <input id="customerPhone" placeholder="Optional" />
+              </div>
+            </div>
+
+            <label>Email</label>
+            <input id="customerEmail" placeholder="Required for email channel" />
+
+            <label>Message</label>
+            <textarea id="messageText" placeholder="Example: Hello, I want to know the price and book a call today."></textarea>
+
+            <div class="btns">
+              <button type="submit" id="simulateBtn">Generate AI Reply</button>
+              <button type="button" class="secondary" id="seedBtn">Add Demo Data</button>
+              <a class="btn-link secondary" href="/export/csv">Export CSV</a>
+            </div>
+          </form>
+        </div>
+
+        <div class="card panel logs">
+          <div class="section-head">
+            <h2>Activity Logs</h2>
+            <button class="secondary" id="refreshLogsBtn">Refresh</button>
+          </div>
+
+          <div class="log-list" id="logsList">
+            <div class="small">No logs loaded yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card panel">
+          <div class="section-head">
+            <h2>AI Inbox</h2>
+            <button class="secondary" id="refreshBtn">Refresh</button>
+          </div>
+
+          <div class="filters">
+            <select id="filterChannel">
+              <option value="all">All Channels</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram">Instagram</option>
+              <option value="email">Email</option>
+              <option value="manual">Manual</option>
+            </select>
+
+            <select id="filterStatus">
+              <option value="all">All Statuses</option>
+              <option value="New">New</option>
+              <option value="AI Replied">AI Replied</option>
+              <option value="Needs Review">Needs Review</option>
+              <option value="Human Replied">Human Replied</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="search-row">
+            <input id="searchInput" placeholder="Search by name, phone, email, or message..." />
+          </div>
+
+          <div class="conversation-list" id="conversationList">
+            <div class="small">Loading conversations...</div>
+          </div>
+        </div>
+
+        <div class="card panel" style="margin-top:18px;">
+          <div class="section-head">
+            <h2>Conversation Details</h2>
+          </div>
+
+          <div id="details">
+            <div class="details-empty">
+              Select a conversation to view messages, AI replies, lead score, intent, and human reply actions.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let conversations = [];
+    let selectedConversationId = null;
+    let searchTimer = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function toast(message) {
+      const box = $("toast");
+      box.textContent = message;
+      box.style.display = "block";
+
+      setTimeout(() => {
+        box.style.display = "none";
+      }, 3300);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      return new Date(value).toLocaleString();
+    }
+
+    function channelLabel(channel) {
+      const map = {
+        whatsapp: "WhatsApp",
+        facebook: "Facebook",
+        instagram: "Instagram",
+        email: "Email",
+        manual: "Manual"
+      };
+
+      return map[channel] || channel;
+    }
+
+    function statusClass(status) {
+      if (status === "AI Replied" || status === "Human Replied" || status === "Closed") {
+        return "good";
+      }
+
+      if (status === "Needs Review") {
+        return "warn";
+      }
+
+      return "";
+    }
+
+    function scoreClass(score) {
+      if (score >= 80) return "bad";
+      if (score >= 55) return "warn";
+      return "good";
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        ...options
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || "Request failed");
+      }
+
+      return data;
+    }
+
+    async function loadHealth() {
+      try {
+        const data = await api("/health");
+
+        $("backendStatus").textContent = data.ok ? "Online" : "Offline";
+        $("openaiStatus").textContent = data.openai_ready ? "Ready" : "Missing Key";
+        $("supabaseStatus").textContent = data.supabase_ready ? "Ready" : "Missing Config";
+        $("autoSendStatus").textContent = data.auto_send ? "ON" : "OFF / Demo Safe";
+        $("metaWebhookUrl").textContent = data.webhook_url || (window.location.origin + "/webhooks/meta");
+        $("emailWebhookUrl").textContent = data.email_webhook_url || (window.location.origin + "/webhooks/email");
+      } catch (err) {
+        $("backendStatus").textContent = "Error";
+        $("openaiStatus").textContent = "-";
+        $("supabaseStatus").textContent = "-";
+        $("autoSendStatus").textContent = "-";
+      }
+    }
+
+    async function loadConversations() {
+      const channel = $("filterChannel").value;
+      const status = $("filterStatus").value;
+      const search = $("searchInput").value.trim();
+
+      const params = new URLSearchParams();
+      params.set("channel", channel);
+      params.set("status", status);
+
+      if (search) {
+        params.set("search", search);
+      }
+
+      const list = $("conversationList");
+      list.innerHTML = `<div class="details-empty">Loading conversations...</div>`;
+
+      try {
+        const data = await api("/conversations?" + params.toString());
+        conversations = data.conversations || [];
+
+        renderStats();
+        renderConversations();
+
+        if (selectedConversationId) {
+          const stillExists = conversations.some((c) => c.id === selectedConversationId);
+
+          if (!stillExists) {
+            selectedConversationId = null;
+            renderEmptyDetails();
+          }
+        }
+      } catch (err) {
+        list.innerHTML = `<div class="details-empty">Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderStats() {
+      const total = conversations.length;
+      const review = conversations.filter((c) => c.needs_human || c.status === "Needs Review").length;
+      const high = conversations.filter((c) => Number(c.lead_score || 0) >= 70).length;
+      const ai = conversations.filter((c) => c.status === "AI Replied").length;
+
+      $("statTotal").textContent = total;
+      $("statReview").textContent = review;
+      $("statHigh").textContent = high;
+      $("statAi").textContent = ai;
+    }
+
+    function renderConversations() {
+      const list = $("conversationList");
+
+      if (!conversations.length) {
+        list.innerHTML = `<div class="details-empty">No conversations found yet. Use the simulation form or add demo data.</div>`;
+        return;
+      }
+
+      list.innerHTML = conversations.map((c) => {
+        const active = c.id === selectedConversationId ? "active" : "";
+        const name = c.customer_name || c.customer_email || c.customer_phone || c.customer_platform_id || "Unknown customer";
+        const score = Number(c.lead_score || 0);
+
+        return `
+          <div class="conversation ${active}" onclick="selectConversation(${c.id})">
+            <div class="conv-top">
+              <div>
+                <div class="name">${escapeHtml(name)}</div>
+                <div class="small">${escapeHtml(c.customer_platform_id || "-")}</div>
+              </div>
+
+              <span class="badge">${channelLabel(c.channel)}</span>
+            </div>
+
+            <div class="preview">${escapeHtml(c.last_message || "No message yet")}</div>
+
+            <div class="badges">
+              <span class="badge ${statusClass(c.status)}">${escapeHtml(c.status || "New")}</span>
+              <span class="badge">${escapeHtml(c.intent || "Unknown")}</span>
+              <span class="badge ${scoreClass(score)}">Score ${score}</span>
+              ${c.needs_human ? `<span class="badge warn">Human Review</span>` : ``}
+            </div>
+
+            <div class="small" style="margin-top:8px;">
+              Updated: ${formatDate(c.updated_at)}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderEmptyDetails() {
+      $("details").innerHTML = `
+        <div class="details-empty">
+          Select a conversation to view messages, AI replies, lead score, intent, and human reply actions.
+        </div>
+      `;
+    }
+
+    async function selectConversation(id) {
+      selectedConversationId = id;
+      renderConversations();
+
+      const details = $("details");
+      details.innerHTML = `<div class="details-empty">Loading conversation...</div>`;
+
+      try {
+        const data = await api(`/conversations/${id}/messages`);
+        renderDetails(data.conversation, data.messages || []);
+      } catch (err) {
+        details.innerHTML = `<div class="details-empty">Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderDetails(conversation, messages) {
+      const name =
+        conversation.customer_name ||
+        conversation.customer_email ||
+        conversation.customer_phone ||
+        conversation.customer_platform_id ||
+        "Unknown customer";
+
+      const score = Number(conversation.lead_score || 0);
+
+      $("details").innerHTML = `
+        <div class="customer-box">
+          <div class="conv-top">
+            <div>
+              <div class="name">${escapeHtml(name)}</div>
+              <div class="small">${channelLabel(conversation.channel)} conversation</div>
+            </div>
+
+            <span class="badge ${scoreClass(score)}">Score ${score}</span>
+          </div>
+
+          <div class="customer-grid">
+            <div class="info-item">
+              <span>Status</span>
+              ${escapeHtml(conversation.status || "New")}
+            </div>
+
+            <div class="info-item">
+              <span>Intent</span>
+              ${escapeHtml(conversation.intent || "Unknown")}
+            </div>
+
+            <div class="info-item">
+              <span>Phone</span>
+              ${escapeHtml(conversation.customer_phone || "-")}
+            </div>
+
+            <div class="info-item">
+              <span>Email</span>
+              ${escapeHtml(conversation.customer_email || "-")}
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="secondary" onclick="updateStatus(${conversation.id}, 'Needs Review')">Mark Review</button>
+            <button class="secondary" onclick="updateStatus(${conversation.id}, 'Closed')">Close</button>
+            <button class="secondary" onclick="updateStatus(${conversation.id}, 'New')">Reopen</button>
+          </div>
+        </div>
+
+        <div class="messages">
+          ${
+            messages.length
+              ? messages.map((m) => `
+                <div class="msg ${m.direction}">
+                  <div class="msg-meta">
+                    ${escapeHtml(m.sender_type)} · ${escapeHtml(m.direction)} · ${formatDate(m.created_at)}
+                  </div>
+                  <div class="msg-text">${escapeHtml(m.message_text)}</div>
+                </div>
+              `).join("")
+              : `<div class="details-empty">No messages yet.</div>`
+          }
+        </div>
+
+        <label>Human Reply</label>
+        <textarea id="humanReplyText" placeholder="Write a manual reply..."></textarea>
+
+        <div class="btns">
+          <button onclick="sendHumanReply(${conversation.id})">Save Human Reply</button>
+        </div>
+      `;
+    }
+
+    async function updateStatus(id, status) {
+      try {
+        await api(`/conversations/${id}/status`, {
+          method: "PUT",
+          body: JSON.stringify({ status })
+        });
+
+        toast("Status updated");
+
+        await loadConversations();
+        await selectConversation(id);
+        await loadLogs();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    async function sendHumanReply(id) {
+      const text = $("humanReplyText").value.trim();
+
+      if (!text) {
+        toast("Write a reply first");
+        return;
+      }
+
+      try {
+        await api(`/conversations/${id}/human-reply`, {
+          method: "POST",
+          body: JSON.stringify({
+            message_text: text
+          })
+        });
+
+        toast("Human reply saved. AUTO_SEND is off, so no live message was sent.");
+
+        await loadConversations();
+        await selectConversation(id);
+        await loadLogs();
+      } catch (err) {
+        toast("Error: " + err.message);
+      }
+    }
+
+    async function loadLogs() {
+      const list = $("logsList");
+
+      try {
+        const data = await api("/logs");
+        const logs = data.logs || [];
+
+        if (!logs.length) {
+          list.innerHTML = `<div class="details-empty">No activity logs yet.</div>`;
+          return;
+        }
+
+        list.innerHTML = logs.map((log) => `
+          <div class="log">
+            <strong>${escapeHtml(log.action)}</strong>
+            <br />
+            Channel: ${escapeHtml(log.channel || "-")} · Conversation: ${escapeHtml(log.conversation_id || "-")}
+            <br />
+            ${escapeHtml(log.details || "")}
+            <br />
+            <span>${formatDate(log.created_at)}</span>
+          </div>
+        `).join("");
+      } catch (err) {
+        list.innerHTML = `<div class="details-empty">Logs error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function submitSimulation(event) {
+      event.preventDefault();
+
+      const btn = $("simulateBtn");
+      btn.disabled = true;
+      btn.textContent = "Generating...";
+
+      const channel = $("channel").value;
+      const email = $("customerEmail").value.trim();
+      const platformId = $("customerPlatformId").value.trim();
+
+      const payload = {
+        channel,
+        customer_name: $("customerName").value.trim(),
+        customer_platform_id: platformId || email || "demo_" + Date.now(),
+        customer_phone: $("customerPhone").value.trim(),
+        customer_email: email,
+        message_text: $("messageText").value.trim(),
+        source: "Dashboard Simulation"
+      };
+
+      if (!payload.message_text) {
+        toast("Write a message first");
+        btn.disabled = false;
+        btn.textContent = "Generate AI Reply";
+        return;
+      }
+
+      if (channel === "email" && !payload.customer_email) {
+        toast("Email channel needs a customer email");
+        btn.disabled = false;
+        btn.textContent = "Generate AI Reply";
+        return;
+      }
+
+      try {
+        const data = await api("/simulate/inbound", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+
+        toast("AI reply generated and conversation saved");
+
+        $("messageText").value = "";
+
+        await loadConversations();
+        await loadLogs();
+
+        if (data.conversation && data.conversation.id) {
+          await selectConversation(data.conversation.id);
+        }
+      } catch (err) {
+        toast("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Generate AI Reply";
+      }
+    }
+
+    async function seedDemo() {
+      const btn = $("seedBtn");
+      btn.disabled = true;
+      btn.textContent = "Adding...";
+
+      try {
+        await api("/demo/seed", {
+          method: "POST"
+        });
+
+        toast("Demo data added");
+
+        await loadConversations();
+        await loadLogs();
+      } catch (err) {
+        toast("Error: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Add Demo Data";
+      }
+    }
+
+    $("simulateForm").addEventListener("submit", submitSimulation);
+    $("seedBtn").addEventListener("click", seedDemo);
+    $("refreshBtn").addEventListener("click", loadConversations);
+    $("refreshLogsBtn").addEventListener("click", loadLogs);
+
+    $("filterChannel").addEventListener("change", loadConversations);
+    $("filterStatus").addEventListener("change", loadConversations);
+
+    $("searchInput").addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadConversations, 350);
+    });
+
+    loadHealth();
+    loadConversations();
+    loadLogs();
+  </script>
+</body>
+</html>
